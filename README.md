@@ -109,9 +109,9 @@ This tells the OmniAuth gem what to name the request and callback URLs.
 
 Eg. `GET /auth/:name` and `GET /auth/:name/callback`.
 
-When you direct a user to `GET /auth/azure_active_directory_b2c`, the `request_phase` of this strategy will be initiated and the user will be redirected to the `authorize` endpoint of the Azure Acitve Directory B2C Policy.
+When you direct a user to `GET /auth/azure_active_directory_b2c`, the `request_phase` of this strategy will be initiated and the user will be redirected to the `authorize` endpoint of the Azure AD B2C Policy.
 
-When the Azure Active Directory B2C Policy returns, it will return to the given `redirect_url` which should, by default, match up to `GET /auth/azure_active_directory_b2c/callback`.  This will initiate the `callback_phase` of this strategy.  The strategy uses the `code` returned from the policy to request an `access_code` and `id_token` from the policy.
+When the Azure AD B2C Policy returns, it will return to the given `redirect_url` which should, by default, match up to `GET /auth/azure_active_directory_b2c/callback`.  This will initiate the `callback_phase` of this strategy.  The strategy uses the `code` returned from the policy to request an `access_code` and `id_token` from the policy.
 
 The unencrypted user information will be available `env['omniauth.auth']`.
 
