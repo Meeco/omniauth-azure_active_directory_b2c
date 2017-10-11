@@ -34,6 +34,10 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
+Head over to [the OmniAuth repo][omniauth] and its [wiki][omniauth_wiki] for further background info and instructions.
+
+See the next section for the strategy options.
+
 ## Sinatra
 
 ```ruby
@@ -54,7 +58,7 @@ class MyApp < Sinatra::Base
 end
 ```
 
-Head over to [the OmniAuth repo][omniauth] and its [wiki][omniauth_wiki] for further background and instructions.
+Head over to [the OmniAuth repo][omniauth] and its [wiki][omniauth_wiki] for further background info and instructions.
 
 See the next section for the strategy options.
 
