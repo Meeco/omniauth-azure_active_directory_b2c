@@ -151,6 +151,7 @@ Alternatively, an object or Proc can be passed to the `:policy` option.
 The object returned can be either:
 * a subclass of `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy`, or;
 * include the module `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions`
+
 The usecase for doing this is to allow your application to dynamically use multiple Azure AD B2C Policies from multiple tenants.
 
 Eg: Dynamically select a policy base on URL params `GET /auth/azure_active_directory_b2c?policy_name=test`
