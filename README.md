@@ -144,7 +144,7 @@ A hash can be passed to `policy_options` specifying the following:
 - `:application_secret`
 - `:tenant_name`: This is the Domain Name or Resource name found in the Overview blade in the Azure AD B2C portal.
 - `:policy_name`: The name of the policy that the user should be redirected to and authenticated against
-- `:scope`: Defaults to `[:openid]`, but can be overriden to request specific api permissions.  Eg. `[:openid, 'https://example.onmicrosoft.com/example-api/user_impersonation']`.  See the microsoft docs form more info: [here][ms_scopes] and [here][ms_oauth_code].
+- `:scope`: Defaults to `[:openid]`, but can be overriden to request specific api permissions.  Eg. `[:openid, 'https://example.onmicrosoft.com/example-api/user_impersonation']`.  See the microsoft docs for more info: [here][ms_scopes] and [here][ms_oauth_code].
 - `:jwk_signing_keys`: This is required to decode the `id_token` returned from the `token` endpoint.  The key can be found by going to the url that is specified in `jwks_uri` parameter at the policy's `.well-known/openid-configuration` page.  Eg: `https://login.microsoftonline.com/te/example.onmicrosoft.com/b2c_1_signupin/discovery/v2.0/keys`.
 
 Alternatively, an object or Proc can be passed to the `:policy` option.
