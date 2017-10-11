@@ -70,7 +70,7 @@ Option | Required | Description |
 ------ | -------- | ----------- |
 `:name` | Optional | Sets the provider name used in the request and callback URLs.  Defaults to `'azure_active_directory_b2c'`.
 `:redirect_uri` | Required | The absolute url sent to the Azure AD B2C policy to initiate the callback phase.
-`:policy` | `policy` or `policy_options` Required | Provides an object that matches the OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions interface.
+`:policy` | `policy` or `policy_options` Required | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions` interface.
 `:policy_options` | `policy` or `policy_options` Required | A hash used to initialize an `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy object`.
 `:authentication_request` | Optional | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest` interface.
 `:authentication_response` | Optional | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse` interface
