@@ -113,7 +113,7 @@ When you direct a user to `GET /auth/azure_active_directory_b2c`, the `request_p
 
 When the Azure AD B2C Policy returns, it will return to the given `redirect_url` which should, by default, match up to `GET /auth/azure_active_directory_b2c/callback`.  This will initiate the `callback_phase` of this strategy.  The strategy uses the `code` returned from the policy to request an `access_code` and `id_token` from the policy.
 
-The unencrypted user information will be available `env['omniauth.auth']`.
+The unencrypted user information will be available from the environment: `env['omniauth.auth']`.
 
 ## `:redirect_uri`
 
