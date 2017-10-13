@@ -125,11 +125,27 @@ module OmniAuth
       # Auth Hash Schema
       #########################################
 
+      def user_info
+        authentication_response.user_info
+      end
+
+      def subject_id
+        authentication_response.subject_id
+      end
+
+      def extra_info
+        authentication_response.extra_info
+      end
+
+      def credentials
+        authentication_response.credentials
+      end
+
       # return the details required by OmniAuth
-      info { authentication_response.user_info }
-      uid { authentication_response.subject_id }
-      extra { authentication_response.extra_info }
-      credentials { authentication_response.credentials }
+      info { user_info }
+      uid { subject_id }
+      extra { extra_info }
+      credentials { credentials }
 
     end
   end
