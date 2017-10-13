@@ -70,11 +70,7 @@ Option | Required | Description |
 ------ | -------- | ----------- |
 `:name` | Optional | Sets the provider name used in the request and callback URLs.  Defaults to `'azure_active_directory_b2c'`.
 `:redirect_uri` | Required | The absolute url sent to the Azure AD B2C policy to initiate the callback phase.
-`:policy` | `policy` or `policy_options` Required | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions` interface.
-`:policy_options` | `policy` or `policy_options` Required | A hash used to initialize an `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy object`.
-`:authentication_request` | Optional | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest` interface.
-`:authentication_response` | Optional | Provides an object that matches the `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse` interface
-`:validate_callback_response` | Optional | Overrides the validation provided by this gem
+`:policy_options` | Required | A hash used to initialize an `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy object`.
 
 Additional info for each option will follow.
 
@@ -83,7 +79,7 @@ This is a complete example:
 ```ruby
 use OmniAuth::Builder do
   provider :azure_active_directory_b2c, {
-    redirect_uri: ->(name) { 'http://localhost:9292/auth/%s/callback' % name },
+    redirect_uri: ->(strategy) { 'http://localhost:9292/auth/%s/callback' % strategy.optionsname },
     policy_options: {
       application_identifier: '00000000-0000-0000-0000-000000000000',
       application_secret: '****************',
@@ -95,7 +91,7 @@ use OmniAuth::Builder do
           'https://example.onmicrosoft.com/example-api/read',
           'https://example.onmicrosoft.com/example-api/write',
         ],
-      jwk_signing_keys: {'keys' => [{ 'kid' => '...', 'n' => '...' }]},
+      jwk_signing_keys: { 'keys' => [{ 'kid' => '...', 'n' => '...' }]},
     }
   }
 end
@@ -127,15 +123,15 @@ provider :azure_active_directory_b2c, redirect_uri: 'https://localhost:9292/auth
 Pass in a Proc that returns a String:
 ```ruby
 provider :azure_active_directory_b2c, {
-  redirect_uri: ->(name, options, params, request) {
-    'https://localhost:9292/auth/%s/callback' % name
+  redirect_uri: ->(strategy) {
+    'https://localhost:9292/auth/%s/callback' % strategy.options.name
   }
 }
 ```
 
-You must ensure that `redirect_uri` is registered with the Application  Azure AD B2C  otherwise you will get errors.
+You must ensure that `redirect_uri` is registered with the Application in the Azure AD B2C tennant otherwise you will get errors.
 
-## `:policy` and `:policy_options`
+## `:policy_options`
 
 These options provide the configuation for the Azure AD B2C Tenant, Application, and Policy being used as the Identity Provider.
 
@@ -144,72 +140,110 @@ A hash can be passed to `policy_options` specifying the following:
 - `:application_secret`
 - `:tenant_name`: This is the Domain Name or Resource name found in the Overview blade in the Azure AD B2C portal.
 - `:policy_name`: The name of the policy that the user should be redirected to and authenticated against
-- `:scope`: Defaults to `[:openid]`, but can be overriden to request specific api permissions.  Eg. `[:openid, 'https://example.onmicrosoft.com/example-api/user_impersonation']`.  See the microsoft docs for more info: [here][ms_scopes] and [here][ms_oauth_code].
+- `:scope`: Defaults to `[:openid]`, but can be overriden to request specific api permissions.  Eg. `[:openid, 'https://example.onmicrosoft.com/example-api/user_impersonation']`.  See the microsoft docs form more info: [here][ms_scopes] and [here][ms_oauth_code].
 - `:jwk_signing_keys`: This is required to decode the `id_token` returned from the `token` endpoint.  The key can be found by going to the url that is specified in `jwks_uri` parameter at the policy's `.well-known/openid-configuration` page.  Eg: `https://login.microsoftonline.com/te/example.onmicrosoft.com/b2c_1_signupin/discovery/v2.0/keys`.
 
-Alternatively, an object or Proc can be passed to the `:policy` option.
-The object returned can be either:
-* a subclass of `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy`, or;
-* include the module `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions`
+# Advanced configuration
 
-The usecase for doing this is to allow your application to dynamically use multiple Azure AD B2C Policies from multiple tenants.
+An alternative approach to integration is to create a subclass of `OmniAuth::Strategies::AzureActiveDirectoryB2C`.
 
-Eg: Dynamically select a policy base on URL params `GET /auth/azure_active_directory_b2c?policy_name=test`
+## Basic example
+
+```ruby
+module OmniAuth
+  module Strategies
+    class CustomB2CStrategy < AzureActiveDirectoryB2C
+
+      option :name, 'custom_b2c_strategy'
+
+      def redirect_uri
+        'http://localhost:9292/auth/%s/callback' % options.name
+      end
+
+      def policy_options
+        { application_identifier: '...', application_secret: '***', etc: '...' }
+      end
+    end
+  end
+end
+OmniAuth.config.add_camelization('custom_b2c_strategy', 'CustomB2C')
+
+use OmniAuth::Builder do
+  provider :custom_b2c_strategy
+end
+```
+
+## Dynamically load policy options to use multiple Azure AD B2C Policies from multiple tenants (Rails example):
+
 ```ruby
 # app/models/policy.rb
 class Policy < ActiveRecord::Base
   include OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions
 end
 
+# lib/custom_b2c_strategy.rb
+module OmniAuth
+  module Strategies
+    class CustomB2CStrategy < AzureActiveDirectoryB2C
+
+      option :name, 'custom_b2c_strategy'
+
+      def redirect_uri
+        'http://localhost:9292/auth/%s/callback' % options.name
+      end
+
+      def policy_name
+        @policy_name ||= begin
+            stored_policy_name = session['omniauth.policy_name']
+            session['omniauth.policy_name'] = request.params['policy_name']
+            session['omniauth.policy_name'] || stored_policy_name
+          end
+      end
+
+      # override
+      def policy
+        @policy ||= Policy.find_by(name: policy_name)
+      end
+    end
+  end
+end
+OmniAuth.config.add_camelization('custom_b2c_strategy', 'CustomB2C')
+
 # config/initializers/devise.rb
-config.omniauth :azure_active_directory_b2c, {
-  redirect_uri: ->(name) { 'http://localhost:9292/auth/%s/callback' % name },
-  policy: ->(options, params, request) {
-    policy_name = params['policy_name']
-    policy = Policy.find_by(name: policy_name)
-    raise "Policy with the given name not found : #{policy_name}" unless policy
-    policy
-  }
-}
+require 'lib/custom_b2c_strategy.rb'
+
+use OmniAuth::Builder do
+  provider :custom_b2c_strategy
 end
 ```
 
-## `:authentication_request` and `:authentication_response`
+This example is overriding the `policy` method.
 
-Generally these options will not be used.
+The object returned can be either:
+* a subclass of `OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy`, or;
+* include the module `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions`
 
-These two options allow the developer to provide their own implementation of `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest` and `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse`.
+ In this case an `ActiveRecord` model that implements the `OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions` is being returned.
+
+The `policy_name` is expected to be provided as an URL parameter to the request URL. Eg: `GET /auth/azure_active_directory_b2c?policy_name=test`
+
+## Overriding `authentication_request` and `authentication_response`
+
+These two methods can be overriden to allow the developer to provide their own implementation of `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest` and `OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse`.
 
 This may be necessary if the developer wants to
 - use an unsupported authorization flow
 - use a different decoding algorithm for the access code and id token
 - access different claims returned in the id_token
 
-## `:validate_callback_response`
+## Overriding `validate_callback_response!`
 
-The default validation can be overriden by passing a Proc to the `validate_callback_response` option.
-
-Eg:
-```ruby
-class CustomError < OmniAuth::Strategies::AzureActiveDirectoryB2C::CallbackError
-  failure_message_key :custom_error
-end
-
-use OmniAuth::Builder do
-  provider :azure_active_directory_b2c, {
-    validate_callback_response: ->(params, request) {
-      if params['code'].nil?
-        raise CustomError, 'Something went wrong'
-      end
-    }
-  }
-end
-```
+This allows develops to either override, or add to the validation provided by this gem.
 
 # Known Limitations
 
 * The strategy only supports the `code` authorization flow.
-* The gem doesnt support discovery, but neither does Azure AD B2C as far as I can tell.
+* The gem doesn't support discovery, but neither does Azure AD B2C as far as I can tell.
 
 [devise]: https://github.com/plataformatec/devise
 [devise_omniauth]: https://github.com/plataformatec/devise/wiki/OmniAuth:-Overview

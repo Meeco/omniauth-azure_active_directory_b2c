@@ -42,64 +42,61 @@ module OmniAuth
 
       option :name, 'azure_active_directory_b2c'
       option :redirect_uri # the url to return to in the callback phase
-      option :policy_options # a hash used to initialize OmniAuth::Strategies::AzureActiveDirectoryB2C::Policy
-      option :policy # a proc, object or hash that matches the OmniAuth::Strategies::AzureActiveDirectoryB2C::PolicyOptions interface
-      option :authentication_request # a proc, object or hash that matches the OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest interface
-      option :authentication_response # a proc, object or hash that matches the OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse interface
-      option :validate_callback_response # used to override the validation provided by this gem
+      option :policy_options
 
       #########################################
       # Strategy - setup
       #########################################
 
+      def policy_options
+        @policy_options ||= options.policy_options || (raise MissingOptionError, '`policy_options` not defined')
+      end
+
+      def policy
+        @policy = Policy.new(**policy_options.symbolize_keys)
+      end
+
+      def redirect_uri
+        @redirect_uri ||= options.redirect_uri.evaluate(self) || (raise MissingOptionError, '`redirect_uri` not defined')
+      end
+
       def setup_phase
-        options.redirect_uri = options.redirect_uri.evaluate(options.name, options, request.params, request)
-        options.policy = options.policy.evaluate(options, request.params, request)
-        options.policy ||= Policy.new(**options.policy_options.symbolize_keys)
-        raise MissingOptionError, 'No `policy` or `policy_options` option specified' if options.policy.nil?
-        raise MissingOptionError, 'No `redirect` option specified' if options.redirect_uri.nil?
       end
 
       #########################################
       # Strategy - request
       #########################################
 
-      def request_phase
-        # this phase needs to redirect to B2C with the correct params and record the state and nonce in the session
+      def authentication_request
+        @authentication_request ||= AuthenticationRequest.new(policy, redirect_uri: redirect_uri)
+      end
 
-        # allow developers to provide their own implementation of OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationRequest
-        auth_request = options.authentication_request.evaluate(options.policy, redirect_uri: options.redirect_uri)
+      def authorization_uri
+        authentication_request.authorization_uri
+      end
 
-        # provide a default implementation
-        auth_request ||= AuthenticationRequest.new(options.policy, redirect_uri: options.redirect_uri)
-
+      def set_session_variables!
         # set the session details to check against in the callback_phase
-        session['omniauth.nonce'] = auth_request.nonce
-        session['omniauth.state'] = auth_request.state
+        session['omniauth.nonce'] = authentication_request.nonce
+        session['omniauth.state'] = authentication_request.state
+      end
 
-        redirect auth_request.authorization_uri
+      def request_phase
+        # this phase needs to redirect to B2C with the correct params and record the state and nonce in the session to check against in the callback_phase
+        set_session_variables!
+        redirect authentication_request.authorization_uri
       end
 
       #########################################
       # Strategy - callback
       #########################################
 
+      def authentication_response
+        @authentication_response ||= AuthenticationResponse.new(policy, request.params['code'])
+      end
+
       def callback_phase
-        # allow developers to provide custom validation
-        if options.validate_callback_response
-          options.validate_callback_response.evaluate(request.params, request)
-        else
-          validate_callback_response!
-        end
-
-        code = request.params['code']
-
-        # allow developers to provide their own implementation of OmniAuth::Strategies::AzureActiveDirectoryB2C::AuthenticationResponse
-        @auth_response = options.authentication_response.evaluate(options.policy, code)
-
-        # provide a default implementation
-        @auth_response ||= AuthenticationResponse.new(options.policy, code)
-
+        validate_callback_response!
         super # required to complete the callback phase
 
       rescue UnauthorizedError => e
@@ -119,7 +116,7 @@ module OmniAuth
           raise InvalidCredentialsError, [error, error_reason, error_description].compact.join('. ')
         elsif state.to_s.empty? || state != session.delete('omniauth.state')
           raise UnauthorizedError
-        elsif !request.params['code']
+        elsif !code
           raise MissingCodeError, 'Code was not returned from OpenID Connect Provider'
         end
       end
@@ -129,13 +126,12 @@ module OmniAuth
       #########################################
 
       # return the details required by OmniAuth
-      info { @auth_response.user_info }
-      uid { @auth_response.subject_id }
-      extra { @auth_response.extra_info }
-      credentials { @auth_response.credentials }
+      info { authentication_response.user_info }
+      uid { authentication_response.subject_id }
+      extra { authentication_response.extra_info }
+      credentials { authentication_response.credentials }
 
     end
   end
 end
 OmniAuth.config.add_camelization('azure_active_directory_b2c', 'AzureActiveDirectoryB2C')
-
