@@ -4,7 +4,7 @@ module OmniAuth
       module PolicyOptions
 
         def respond_to_missing?(method_name, *args)
-          self.class.instance_methods.include?("policy_#{method_name}".to_sym)
+          self.class.instance_methods.include?("policy_#{method_name}".to_sym) || super
         end
 
         def method_missing(method_name, *args, &block)
