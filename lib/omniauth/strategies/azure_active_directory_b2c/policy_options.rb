@@ -11,6 +11,8 @@ module OmniAuth
           policy_method_name = 'policy_%s' % method_name
           if respond_to?(policy_method_name)
             send(policy_method_name, *args, &block)
+          else
+            super
           end
         end
 
