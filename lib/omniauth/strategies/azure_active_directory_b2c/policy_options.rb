@@ -24,6 +24,10 @@ module OmniAuth
           raise MissingOptionError, '`application_secret` not defined'
         end
 
+        def policy_issuer
+          raise MissingOptionError, '`issuer` not defined'
+        end
+
         def policy_tenant_name
           raise MissingOptionError, '`tenant_name` not defined'
         end
