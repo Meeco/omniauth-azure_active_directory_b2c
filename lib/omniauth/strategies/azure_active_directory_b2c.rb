@@ -36,6 +36,7 @@ module OmniAuth
       InvalidCredentialsError = Class.new(CallbackError) { failure_message_key :invalid_credentials }
       UnauthorizedError = Class.new(CallbackError) { failure_message_key :unauthorized }
       MissingCodeError = Class.new(CallbackError) { failure_message_key :missing_code }
+      IdTokenValidationError = Class.new(CallbackError) { failure_message_key :id_token_validation_failed }
 
       #########################################
       # Strategy options
@@ -98,6 +99,7 @@ module OmniAuth
 
       def callback_phase
         validate_callback_response!
+        validate_id_token!
         super # required to complete the callback phase
 
       rescue UnauthorizedError => e
@@ -119,6 +121,13 @@ module OmniAuth
           raise UnauthorizedError
         elsif !code
           raise MissingCodeError, 'Code was not returned from OpenID Connect Provider'
+        end
+      end
+
+      def validate_id_token!
+        results = authentication_response.validate_id_token
+        if results.has_errors?
+          raise IdTokenValidationError, results.full_messages.join('. ')
         end
       end
 

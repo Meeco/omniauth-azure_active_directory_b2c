@@ -112,6 +112,10 @@ module OmniAuth
           end
         end
 
+        def validate_id_token(seconds_since_epoc = Time.now.to_i)
+          JwtValidator.validate(id_token.raw_attributes, public_key, policy, seconds_since_epoc)
+        end
+
       end # AuthenticationResponse
     end # AzureActiveDirectoryB2C
   end # Strategies
