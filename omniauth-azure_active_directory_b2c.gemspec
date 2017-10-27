@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
       'lib/omniauth/strategies/azure_active_directory_b2c/authentication_request.rb',
       'lib/omniauth/strategies/azure_active_directory_b2c/authentication_response.rb',
       'lib/omniauth/strategies/azure_active_directory_b2c/client.rb',
+      'lib/omniauth/strategies/azure_active_directory_b2c/jwt_validator.rb',
       'lib/omniauth/strategies/azure_active_directory_b2c/policy_options.rb',
       'lib/omniauth/strategies/azure_active_directory_b2c/policy.rb',
       'lib/omniauth/strategies/azure_active_directory_b2c/version.rb',
