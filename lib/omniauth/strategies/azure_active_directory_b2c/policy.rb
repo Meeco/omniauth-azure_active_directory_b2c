@@ -6,12 +6,13 @@ module OmniAuth
 
         attr_reader :application_identifier, :application_secret, :issuer, :tenant_name, :policy_name, :jwk_signing_algorithm, :jwk_signing_keys
 
-        def initialize(application_identifier:, application_secret:, issuer:, tenant_name:, policy_name:, jwk_signing_keys:, scope: nil)
+        def initialize(application_identifier:, application_secret:, issuer:, tenant_name:, policy_name:, jwk_signing_algorithm:, jwk_signing_keys:, scope: nil)
           @application_identifier = application_identifier
           @application_secret = application_secret
           @issuer = issuer
           @tenant_name = tenant_name
           @policy_name = policy_name
+          @jwk_signing_algorithm = jwk_signing_algorithm
           @jwk_signing_keys = jwk_signing_keys
           @scope = *scope
         end

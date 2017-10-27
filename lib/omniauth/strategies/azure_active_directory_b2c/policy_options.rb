@@ -52,9 +52,13 @@ module OmniAuth
           '%s/discovery/v2.0/keys' % host_name
         end
 
-        def policy_id_token_signing_algorithm
+        def policy_jwk_signing_algorithm
           # this can be "discovered" from the `jwks_uri` property at .well-known/openid-configuration
           'RS256'.to_sym
+        end
+
+        def policy_id_token_signing_algorithm
+          policy_jwk_signing_algorithm
         end
 
         def policy_scope

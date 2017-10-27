@@ -96,10 +96,10 @@ module OmniAuth
         end
 
         def public_key
-          if policy.id_token_signing_algorithm == :RS256 && policy.jwk_signing_keys
+          if policy.jwk_signing_algorithm == :RS256 && policy.jwk_signing_keys
             jwk_key
           else
-            raise 'id_token signing algorithm is currently not supported: %s' % policy.id_token_signing_algorithm
+            raise 'id_token signing algorithm is currently not supported: %s' % policy.jwk_signing_algorithm
           end
         end
 
