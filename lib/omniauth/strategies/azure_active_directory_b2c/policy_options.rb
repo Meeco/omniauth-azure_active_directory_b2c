@@ -41,11 +41,11 @@ module OmniAuth
         end
 
         def policy_authorization_endpoint
-          '%s/oauth2/v2.0/authorize' % host_name
+          @authorization_endpoint || '%s/oauth2/v2.0/authorize' % host_name
         end
 
         def policy_token_endpoint
-          '%s/oauth2/v2.0/token' % host_name
+          @token_endpoint || '%s/oauth2/v2.0/token' % host_name
         end
 
         def policy_jwks_uri
