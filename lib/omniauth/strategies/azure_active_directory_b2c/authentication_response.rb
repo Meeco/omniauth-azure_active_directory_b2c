@@ -41,7 +41,7 @@ module OmniAuth
         def user_info
           {
             name: id_token.raw_attributes['name'],
-            email: ([*id_token.raw_attributes['emails']].first),
+            email: (id_token.raw_attributes['email'] || [*id_token.raw_attributes['emails']].first),
             nickname: id_token.raw_attributes['preferred_username'],
             first_name: id_token.raw_attributes['given_name'],
             last_name: id_token.raw_attributes['family_name'],
