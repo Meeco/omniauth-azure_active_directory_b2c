@@ -36,8 +36,12 @@ module OmniAuth
           raise MissingOptionError, '`policy_name` not defined'
         end
 
+        def tenant_identifier
+          @tenant_identifier ||= tenant_name.gsub('.onmicrosoft.com', '')
+        end
+
         def policy_host_name
-          'https://login.microsoftonline.com/te/%s/%s' % [tenant_name, policy_name]
+          'https://%s.b2clogin.com/%s/%s' % [tenant_identifier, tenant_name, policy_name]
         end
 
         def policy_authorization_endpoint
