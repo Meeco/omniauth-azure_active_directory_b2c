@@ -1,5 +1,4 @@
 require 'omniauth'
-require 'proc_evaluate'
 
 require_relative 'azure_active_directory_b2c/authentication_request.rb'
 require_relative 'azure_active_directory_b2c/authentication_response.rb'
@@ -14,8 +13,6 @@ module OmniAuth
     class AzureActiveDirectoryB2C
 
       include OmniAuth::Strategy
-
-      using ProcEvaluate # adds the `evaluate` refinement method to Object and Proc instances
 
       #########################################
       # Error definitions
@@ -59,7 +56,7 @@ module OmniAuth
       end
 
       def redirect_uri
-        @redirect_uri ||= options.redirect_uri.evaluate(self) || (raise MissingOptionError, '`redirect_uri` not defined')
+        @redirect_uri ||= options.redirect_uri || (raise MissingOptionError, '`redirect_uri` not defined')
       end
 
       def setup_phase
