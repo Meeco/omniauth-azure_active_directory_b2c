@@ -37,7 +37,17 @@ module OmniAuth
         end
 
         def policy_host_name
-          'https://login.microsoftonline.com/te/%s/%s' % [tenant_name, policy_name]
+          case idp_redirect_url_format.to_s
+            when 'b2clogin_guid'
+              'https://%s.b2clogin.com/%s/%s' % [tenant_name, tenant_guid, policy_name]
+            when 'onmicrosoft'
+              'https://%s.b2clogin.com/%s.onmicrosoft.com/%s' % [tenant_name, tenant_name, policy_name]
+            else
+              # this is a deprecated format
+              tenant_name = tenant_name.to_s
+              tenant_name += '.onmicrosoft.com' unless tenant_name.end_with?('.onmicrosoft.com')
+              'https://login.microsoftonline.com/te/%s/%s' % [tenant_name, policy_name]
+          end
         end
 
         def policy_authorization_endpoint

@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
     'Brent Jacobs',
     'NextFaze',
     'Meeco',
+    'Fishz'
   ]
 
   spec.files = [
