@@ -89,6 +89,8 @@ module OmniAuth
           # TODO: if the id_token is not passed back, we could get the id token from the userinfo endpoint (or fail if no endpoint is defined?)
           encrypted_id_token = access_token.id_token
           decoded_id_token = decode_id_token!(encrypted_id_token)
+
+          decoded_id_token
         end
 
         def decode_id_token!(id_token)
@@ -104,7 +106,7 @@ module OmniAuth
         end
 
         def jwk_key
-          key = policy.jwk_signing_keys
+          key = policy.jwk_signing_keys.first
           if key.has_key?('keys')
             JSON::JWK::Set.new(key['keys']) # a set of keys
           else

@@ -21,7 +21,8 @@ module OmniAuth
         end
 
         def policy_application_secret
-          raise MissingOptionError, '`application_secret` not defined'
+          nil
+          # raise MissingOptionError, '`application_secret` not defined'
         end
 
         def policy_issuer
@@ -88,7 +89,7 @@ module OmniAuth
         def policy_default_client_options
           {
             identifier: application_identifier,
-            secret: application_secret,
+            # secret: application_secret,
             authorization_endpoint: authorization_endpoint,
             token_endpoint: token_endpoint,
             jwks_uri: jwks_uri,
