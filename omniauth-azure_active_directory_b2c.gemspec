@@ -13,7 +13,8 @@ Gem::Specification.new do |spec|
     'Brent Jacobs',
     'NextFaze',
     'Meeco',
-    'Fishz'
+    'Fishz',
+    'kefon94'
   ]
 
   spec.files = [
@@ -28,7 +29,7 @@ Gem::Specification.new do |spec|
       'lib/omniauth/strategies/azure_active_directory_b2c/version.rb',
     ]
 
-  spec.add_dependency 'omniauth', '~> 1.3'
+  spec.add_dependency 'omniauth', '~> 2.0'
   spec.add_dependency 'openid_connect', '~> 1.1'
   spec.add_dependency 'proc_evaluate', '~> 1.0'
 end
